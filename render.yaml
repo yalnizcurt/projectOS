@@ -1,15 +1,19 @@
 services:
+  # 1. Node.js Backend API (Fast RAG Server, Groq Inference, Document Catalog)
   - type: web
-    name: erp-delivery-control-tower
-    env: static
-    buildCommand: npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    name: erp-control-tower-backend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    healthCheckPath: /api/health
     envVars:
+      - key: PORT
+        value: 8000
       - key: VITE_LLM_PROVIDER
         value: groq
       - key: VITE_GROQ_MODEL
         value: openai/gpt-oss-120b
+      - key: VITE_GROQ_API_KEY
+        sync: false

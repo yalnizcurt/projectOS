@@ -38,6 +38,29 @@ export class RetrievalPipeline {
   async query(userQuestion, contextParams = {}, searchOptions = {}) {
     const startTime = Date.now();
 
+    // 0. Remote Backend Delegation (Render Backend Support)
+    const backendUrl = typeof window !== 'undefined' ? import.meta.env?.VITE_BACKEND_URL : null;
+    if (backendUrl) {
+      try {
+        const resp = await fetch(`${backendUrl}/api/knowledge/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: userQuestion,
+            context: contextParams,
+            searchOptions,
+          }),
+        });
+        if (resp.ok) {
+          const backendData = await resp.json();
+          this.recordObservability(backendData);
+          return backendData;
+        }
+      } catch (err) {
+        console.warn('Remote backend query failed, falling back to local pipeline:', err);
+      }
+    }
+
     // 1. Context Builder (statement2 §34)
     const contextPayload = ContextBuilder.build(contextParams);
 
