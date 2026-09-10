@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "vercel": {
+      "serverUrl": "https://mcp.vercel.com"
+    },
+    "render": {
+      "serverUrl": "https://mcp.render.com/mcp"
+    }
+  }
+}
