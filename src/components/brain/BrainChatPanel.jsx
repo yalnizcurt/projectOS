@@ -32,6 +32,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import CitationCard from './CitationCard';
 import EvidenceDrawer from './EvidenceDrawer';
+import MarkdownRenderer from './MarkdownRenderer';
 import { globalRetrievalPipeline } from '../../knowledge/RetrievalPipeline';
 import { useApp } from '../../data/store';
 
@@ -326,24 +327,8 @@ export default function BrainChatPanel({ context = {}, isCompact = false }) {
                       </Typography>
                     </Box>
 
-                    {/* Answer Text Content */}
-                    <Box
-                      sx={{
-                        fontSize: '0.86rem',
-                        lineHeight: 1.65,
-                        color: '#1e293b',
-                        whiteSpace: 'pre-line',
-                        '& h3': {
-                          fontSize: '0.92rem',
-                          fontWeight: 700,
-                          mt: 1.5,
-                          mb: 0.5,
-                          color: '#0f172a',
-                        },
-                      }}
-                    >
-                      {msg.answer}
-                    </Box>
+                    {/* Answer Text Content with Rich Markdown & Code Highlighting */}
+                    <MarkdownRenderer content={msg.answer} />
 
                     {/* Mandatory Citations Section (§22) */}
                     {msg.citations && msg.citations.length > 0 && (
