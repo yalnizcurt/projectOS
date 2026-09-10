@@ -21,11 +21,16 @@ export class ContentFetcher {
  * Retrieves public technical documentation. For local MVP development, maps public
  * mock URLs (e.g. https://mock-company.com/sap/configuration) to local static fixtures.
  */
-function resolveLocalPath(path) {
-  if (typeof window === 'undefined' && path.startsWith('/')) {
-    return `http://127.0.0.1:5173${path}`;
+async function readFixtureContent(localPath) {
+  if (typeof window === 'undefined') {
+    const fs = await import('fs');
+    const path = await import('path');
+    const fullPath = path.join(process.cwd(), 'public', localPath);
+    return fs.readFileSync(fullPath, 'utf8');
   }
-  return path;
+  const res = await fetch(localPath);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ${localPath}`);
+  return await res.text();
 }
 
 export class PublicWebFetcher extends ContentFetcher {
@@ -43,9 +48,7 @@ export class PublicWebFetcher extends ContentFetcher {
 
     if (localPath) {
       try {
-        const res = await fetch(resolveLocalPath(localPath));
-        if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ${localPath}`);
-        const content = await res.text();
+        const content = await readFixtureContent(localPath);
         const titleMatch = content.match(/^#\s+(.+)$/m);
         return {
           content,
@@ -129,9 +132,7 @@ export class MockAuthenticatedFetcher extends ContentFetcher {
     }
 
     try {
-      const res = await fetch(resolveLocalPath(mockAuthMeta.path));
-      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to read authenticated fixture`);
-      const content = await res.text();
+      const content = await readFixtureContent(mockAuthMeta.path);
       return {
         content,
         title: mockAuthMeta.title,

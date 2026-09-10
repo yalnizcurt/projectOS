@@ -53,21 +53,21 @@ export async function seedKnowledgeCorpus(force = false, onProgress = null) {
 
   const results = [];
 
-function resolveLocalPath(path) {
-  if (typeof window === 'undefined' && path.startsWith('/')) {
-    return `http://127.0.0.1:5173${path}`;
+async function readFixtureContent(localPath) {
+  if (typeof window === 'undefined') {
+    const fs = await import('fs');
+    const path = await import('path');
+    const fullPath = path.join(process.cwd(), 'public', localPath);
+    return fs.readFileSync(fullPath, 'utf8');
   }
-  return path;
+  const res = await fetch(localPath);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ${localPath}`);
+  return await res.text();
 }
 
   for (const fixture of PLAYBOOK_FIXTURES) {
     try {
-      const res = await fetch(resolveLocalPath(fixture.fetchUrl));
-      if (!res.ok) {
-        console.warn(`Could not load fixture ${fixture.fetchUrl}`);
-        continue;
-      }
-      const content = await res.text();
+      const content = await readFixtureContent(fixture.fetchUrl);
 
       const summary = await globalIngestionPipeline.ingestPlaybook(
         {

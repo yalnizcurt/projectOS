@@ -25,6 +25,7 @@ const PORT = process.env.PORT || 8000;
 
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '10mb' }));
+app.use(express.static('public'));
 
 // 1. Health Check (for Render health check endpoint)
 app.get('/api/health', (req, res) => {
@@ -111,6 +112,19 @@ app.post('/api/knowledge/ingest', async (req, res) => {
     });
   } catch (err) {
     console.error('Ingestion error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5b. Force Re-seed Endpoint
+app.post('/api/knowledge/seed', async (req, res) => {
+  try {
+    const result = await seedKnowledgeCorpus(true);
+    res.json({
+      success: true,
+      result,
+    });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
